@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>memory</title>
+    <style>
+        input {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+  <h1>神経衰弱</h1> 
+  <p>time: <span id="time"></span></p> 
+  <h2>score: <span id="score"></span></h2> 
+  <div id='stage'></div>
+
+<script> 
+    (function() {
+  var cards = [],
+      CARD_NUM = 16,
+      currentNum,
+      correctNum = 0,
+      enableFlip = true,
+      enableTimer = true,
+      time = 0,
+      score = 3,
+      timerText,
+      openedCard;
+  
+  function initCards() {
+    var stage = document.getElementById('stage'),
+      cardIndex,
+      i,
+      num;
+
+      for (i = 0; i < CARD_NUM; i++) {
+          num = Math.floor(i / 2);
+          do {
+              cardIndex = Math.floor(Math.random() * CARD_NUM);
+          } while (typeof cards[cardIndex] !== 'undefined');
+          cards[cardIndex] = createCard(num);
+      }
+      console.log(cards[0]);
+      for (i = 0; i < CARD_NUM; i++) {
+          stage.appendChild(cards[i]);
+          if (i % Math.sqrt(CARD_NUM) == (Math.sqrt(CARD_NUM) - 1)) {
+            stage.appendChild(document.createElement('br'));
+          }
+      }
+  }
+  
+  
+  function flip(card) {
+      if (!enableFlip) {return;}
+      if (card.value != '?') {return;}
+      card.value = card.dataset.num;
+      
+      if (typeof currentNum === 'undefined') {
+          openedCard = card;
+          currentNum = card.dataset.num;
+      } else {
+          judge(card);
+         currentNum = undefined; 
+      }
+  }
+  
+  function judge(card) {
+      if (currentNum == card.dataset.num) {
+          correctNum++; 
+          score += 2;
+          document.getElementById("score").innerHTML = score;
+          if (correctNum == CARD_NUM / 2) {
+              enableTimer = false;
+              alert("your score is..."+ document.getElementById("score").innerHTML );
+          }      
+      } else {
+          score -= 0.2;
+          enableFlip = false;
+          setTimeout(function() {
+              openedCard.value = '?';
+              card.value = '?';
+              enableFlip = true;
+              }, 700);
+      }
+  }
+  
+  function runTimer() {
+      if (!enableTimer) {return;}
+      time++;
+      score = Math.floor( (score -  0.001) * 1000 ) / 1000;
+  
+      if (score < 0) {
+          enableTimer = false;
+          alert("GameOver! your score is 0");
+      
+      }
+  
+      document.getElementById("score").innerHTML = score;
+      document.getElementById("time").innerHTML = makeTimerText(time);
+  
+      setTimeout(function() {
+          runTimer();        
+      },10);
+  }
+  
+  function makeTimerText(milliSeconds) {
+      var seconds = Math.floor(milliSeconds / 100);
+      milliSeconds -= seconds * 100;
+      return seconds + '.' + milliSeconds;
+      
+  }
+
+  function createCard(num) {
+    var card = document.createElement('input');
+    card.type = 'button';
+    card.value = '?';
+    card.dataset.num = num;
+    card.onclick = function() {
+      flip(this);
+    }
+    return card;
+  }
+
+  initCards();
+  runTimer();
+
+})();
+
+</script>
+</body>
+</html>
